@@ -7,13 +7,13 @@ import chromadb
 from chromadb.config import Settings
 from chromadb.utils import embedding_functions
 from tqdm import tqdm
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 from streamlit_mic_recorder import speech_to_text
 
 # Streamlit page configuration MUST be first
-st.set_page_config(page_title="PDF Q&A AI (Gemini)", layout="wide")
-st.title("📄 PDF Q&A AI System (Gemini)")
+st.set_page_config(page_title="PDF Q&A AI (Gemini 2.5)", layout="wide")
+st.title("📄 PDF Q&A AI System (Gemini 2.5)")
 
 # Helper: robust rerun across Streamlit versions
 def safe_rerun():
@@ -39,9 +39,7 @@ chroma_client = chromadb.Client(Settings(
 embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL)
 
 # Configure Gemini API
-GEMINI_API_KEY = os.getenv('GOOGLE_API_KEY')
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+GEMINI_API_KEY = os.getenv(GOOGLE_API_KEY)
 
 # Helper functions
 def extract_text_from_pdf(pdf_path):
@@ -83,9 +81,15 @@ Question: {question}
 Answer:
 """
     if GEMINI_API_KEY:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        try:
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            response = client.models.generate_content(
+                model="gemini-1.5-flash",  # Updated model
+                contents=prompt
+            )
+            return response.text.strip()
+        except Exception as e:
+            return f"An error occurred: {e}"
     else:
         return "Gemini API key not found. Please set GOOGLE_API_KEY in your environment."
 

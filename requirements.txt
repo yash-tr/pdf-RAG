@@ -3,7 +3,7 @@ streamlit-mic-recorder
 chromadb
 sentence-transformers
 PyMuPDF
-google-generativeai
+google-genai
 SpeechRecognition
 pydub
 pytest
